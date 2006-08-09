@@ -1,0 +1,17 @@
+Build.PL
+Changes
+lib/Config/Any.pm
+lib/Config/Any/General.pm
+lib/Config/Any/INI.pm
+lib/Config/Any/JSON.pm
+lib/Config/Any/Perl.pm
+lib/Config/Any/XML.pm
+lib/Config/Any/YAML.pm
+Makefile.PL
+MANIFEST
+META.yml			# Will be created by "make dist"
+README
+t/00.load.t
+t/perlcritic.t
+t/pod-coverage.t
+t/pod.t

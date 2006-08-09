@@ -1,0 +1,26 @@
+Config-Any version 0.0.4
+
+This module generalises loading class configuration data from a number of different
+file formats.
+
+INSTALLATION
+
+To install this module, run the following commands:
+    perl Build.PL
+    ./Build
+    ./Build test
+    ./Build install
+
+
+DEPENDENCIES
+
+Module::Pluggable >= 3.01
+
+COPYRIGHT AND LICENCE
+
+The development of this module was sponsored by SAPO, a division of Portugal Telecom.
+
+Copyright (C) 2006, Portugal Telecom
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
