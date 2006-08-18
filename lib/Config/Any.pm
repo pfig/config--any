@@ -4,85 +4,17 @@ use warnings;
 use strict;
 use Carp;
 use Module::Pluggable::Object ();
+use English qw(-no_match_vars);
+
 our $VERSION = (qw$Rev: $)[-1];
-
-sub load_files {
-    my ($class, $args) = @_;
-    croak "load_files requires a hashref argument" unless defined $args;
-    croak "no files specified!" unless defined $args->{files};
-    my $files = [ grep { -f $_ } @{$args->{files}} ];
-    my $filter_cb = delete $args->{filter};
-    return $class->_load($files, $filter_cb);
-}
-
-sub load_stems {
-    my ($class, $args) = @_;
-    croak "load_stems requires a hashref argument" unless defined $args;
-    croak "no stems specified!" unless defined $args->{stems};
-    my $filter_cb = delete $args->{filter};
-    my $stems = $args->{stems};
-    my @files;
-    STEM:
-    for my $s (@$stems) {
-        EXT:
-        for my $ext ($class->extensions) {
-            my $file = "$s.$ext";
-            next EXT unless -f $file;
-            push @files, $file;
-            last EXT;
-        }
-    }
-    return $class->_load(\@files, $filter_cb);
-}
-
-sub _load {
-    my ($class, $files_ref, $filter_cb) = @_;
-    croak "_load requires a arrayref of file paths" unless defined $files_ref;
-
-    my $final_configs = [];
-
-    for my $loader ( $class->plugins ) {
-        for my $filename (@$files_ref) {
-            my $config = $loader->load( $filename );
-            next if !$config;
-            $filter_cb->( $config ) if defined $filter_cb;
-            push @$final_configs, { $filename => $config };
-        }
-    }
-    $final_configs;
-}
-
-sub finder {
-    my $class = shift;
-    my $finder = Module::Pluggable::Object->new(
-        search_path => [ __PACKAGE__ ],
-        require     => 1
-    );
-    $finder;
-}
-
-sub plugins {
-    my $class = shift;
-    return $class->finder->plugins;
-}
-
-sub extensions {
-    my $class = shift;
-    return [ map { $_->extensions } $class->plugins ];
-}
-
-1; # Magic true value required at end of module
-__END__
 
 =head1 NAME
 
-Config::Any - [One line description of module's purpose here]
-
+Config::Any - Load configuration from different file formats, transparently
 
 =head1 VERSION
 
 This document describes Config::Any version 0.0.4
-
 
 =head1 SYNOPSIS
 
@@ -100,88 +32,216 @@ This document describes Config::Any version 0.0.4
 
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
+L<Config::Any|Config::Any> provides a facility for Perl applications and libraries
+to load configuration data from multiple different file formats. It supports XML, YAML,
+JSON, Apache-style configuration, Windows INI files, and even Perl code.
 
+The rationale for this module is as follows: Perl programs are deployed on many different
+platforms and integrated with many different systems. Systems administrators and end 
+users may prefer different configuration formats than the developers. The flexibility
+inherent in a multiple format configuration loader allows different users to make 
+different choices, without generating extra work for the developers. As a developer
+you only need to learn a single interface to be able to use the power of different
+configuration formats.
 
 =head1 INTERFACE 
 
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
+=cut
 
+=head2 load_files( )
+
+    Config::Any->load_files({files => \@files]});
+    Config::Any->load_files({files => \@files, filter  => \&filter});
+    Config::Any->load_files({files => \@files, use_ext => 1});
+
+C<load_files()> attempts to load configuration from the list of files passed in
+the C<files> parameter, if the file exists.
+
+If the C<filter> parameter is set, it is used as a callback to modify the configuration 
+data before it is returned. It will be passed a single hash-reference parameter which 
+it should modify in-place.
+
+If the C<use_ext> parameter is defined, the loader will attempt to parse the file
+extension from each filename and will skip the file unless it matches a standard
+extension for the loading plugins. Only plugins whose standard extensions match the
+file extension will be used. For efficiency reasons, its use is encouraged, but
+be aware that you will lose flexibility -- for example, a file called C<myapp.cfg> 
+containing YAML data will not be offered to the YAML plugin, whereas C<myapp.yml>
+or C<myapp.yaml> would be.
+
+=cut
+
+sub load_files {
+    my ($class, $args) = @_;
+    return unless defined $args;
+    unless (exists $args->{files}) {
+        warn "no files specified";
+        return;
+    }
+
+    my $files = [ grep { -f $_ } @{$args->{files}} ];
+    my $filter_cb = delete $args->{filter};
+    my $use_ext   = delete $args->{use_ext};
+    return $class->_load($files, $filter_cb, $use_ext);
+}
+
+=head2 load_stems( )
+
+    Config::Any->load_stems({stems => \@stems]});
+    Config::Any->load_stems({stems => \@stems, filter  => \&filter});
+    Config::Any->load_stems({stems => \@stems, use_ext => 1});
+
+C<load_stems()> attempts to load configuration from a list of files which it generates
+by combining the filename stems list passed in the C<stems> parameter with the 
+potential filename extensions from each loader, which you can check with the
+C<extensions()> classmethod described below. Once this list of possible filenames is
+built it is treated exactly as in C<load_files()> above, as which it takes the same
+parameters. Please read the C<load_files()> documentation before using this method.
+
+=cut
+
+sub load_stems {
+    my ($class, $args) = @_;
+    return unless defined $args;
+    unless (exists $args->{stems}) {
+        warn "no stems specified";
+        return;
+    }
+        
+    my $filter_cb = delete $args->{filter};
+    my $use_ext   = delete $args->{use_ext};
+    my $stems = $args->{stems};
+    my @files;
+    STEM:
+    for my $s (@$stems) {
+        EXT:
+        for my $ext ($class->extensions) {
+            my $file = "$s.$ext";
+            next EXT unless -f $file;
+            push @files, $file;
+            last EXT;
+        }
+    }
+    return $class->_load(\@files, $filter_cb, $use_ext);
+}
+
+# this is where we do the real work
+# it's a private class-method because users should use the interface described
+# in the POD.
+sub _load {
+    my ($class, $files_ref, $filter_cb, $use_ext) = @_;
+    croak "_load requires a arrayref of file paths" unless defined $files_ref;
+
+    my $final_configs       = [];
+    my $originally_loaded   = {};
+
+    for my $loader ( $class->plugins ) {
+        my %ext = map { $_ => 1 } $loader->extensions;
+        FILE:
+        for my $filename (@$files_ref) {
+            if (defined $use_ext) {
+                for my $e (keys %ext) {
+                    my ($fileext) = $filename =~ m{ \. $e \z }xms;
+                    next FILE unless exists $ext{$fileext};
+                }
+            }
+
+            my $config;
+			eval {
+				$config = $loader->load( $filename );
+			};
+			next if $EVAL_ERROR;
+            next if !$config;
+            $filter_cb->( $config ) if defined $filter_cb;
+            push @$final_configs, { $filename => $config };
+        }
+    }
+    $final_configs;
+}
+
+=head2 finder( )
+
+The C<finder()> classmethod returns the 
+L<Module::Pluggable::Object|Module::Pluggable::Object>
+object which is used to load the plugins. See the documentation for that module for
+more information.
+
+=cut
+
+sub finder {
+    my $class = shift;
+    my $finder = Module::Pluggable::Object->new(
+        search_path => [ __PACKAGE__ ],
+        require     => 1
+    );
+    $finder;
+}
+
+=head2 plugins( )
+
+The C<plugins()> classmethod returns the names of configuration loading plugins as 
+found by L<Module::Pluggable::Object|Module::Pluggable::Object>.
+
+=cut
+
+sub plugins {
+    my $class = shift;
+    return $class->finder->plugins;
+}
+
+=head2 extensions( )
+
+The C<extensions()> classmethod returns the possible file extensions which can be loaded
+by C<load_stems()> and C<load_files()>. This may be useful if you set the C<use_ext>
+parameter to those methods.
+
+=cut
+
+sub extensions {
+    my $class = shift;
+    my @ext = map { $_->extensions } $class->plugins;
+	return wantarray ? @ext : [@ext];
+}
 
 =head1 DIAGNOSTICS
 
-=for author to fill in:
-    List every single error and warning message that the module can
-    generate (even the ones that will "never happen"), with a full
-    explanation of each problem, one or more likely causes, and any
-    suggested remedies.
-
 =over
 
-=item C<< Error message here, perhaps with %s placeholders >>
+=item C<no files specified> or C<no stems specified>
 
-[Description of error here]
+The C<load_files()> and C<load_stems()> methods will issue this warning if
+called with an empty list of files/stems to load.
 
-=item C<< Another error message here >>
+=item C<_load requires a arrayref of file paths>
 
-[Description of error here]
-
-[Et cetera, et cetera]
+This fatal error will be thrown by the internal C<_load> method. It should not occur
+but is specified here for completeness. If your code dies with this error, please
+email a failing test case to the authors below.
 
 =back
 
-
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=for author to fill in:
-    A full explanation of any configuration system(s) used by the
-    module, including the names and locations of any configuration
-    files, and the meaning of any environment variables or properties
-    that can be set. These descriptions must also include details of any
-    configuration language used.
-  
 Config::Any requires no configuration files or environment variables.
-
 
 =head1 DEPENDENCIES
 
-=for author to fill in:
-    A list of all the other modules that this module relies upon,
-    including any restrictions on versions, and an indication whether
-    the module is part of the standard Perl distribution, part of the
-    module's distribution, or must be installed separately. ]
+L<Module::Pluggable|Module::Pluggable>
 
-None.
-
+And at least one of the following:
+L<Config::General|Config::General>
+L<Config::Tiny|Config::Tiny>
+L<JSON|JSON>
+L<YAML|YAML>
+L<JSON::Syck|JSON::Syck>
+L<YAML::Syck|YAML::Syck>
+L<XML::Simple|XML::Simple>
 
 =head1 INCOMPATIBILITIES
 
-=for author to fill in:
-    A list of any modules that this module cannot be used in conjunction
-    with. This may be due to name conflicts in the interface, or
-    competition for system or program resources, or due to internal
-    limitations of Perl (for example, many modules that use source code
-    filters are mutually incompatible).
-
 None reported.
 
-
 =head1 BUGS AND LIMITATIONS
-
-=for author to fill in:
-    A list of known problems with the module, together with some
-    indication Whether they are likely to be fixed in an upcoming
-    release. Also a list of restrictions on the features the module
-    does provide: data types that cannot be handled, performance issues
-    and the circumstances in which they may arise, practical
-    limitations on the size of data sets, special cases that are not
-    (yet) handled, etc.
 
 No bugs have been reported.
 
@@ -189,11 +249,17 @@ Please report any bugs or feature requests to
 C<bug-config-any@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
-
 =head1 AUTHOR
 
 Joel Bernstein  C<< <rataxis@cpan.org> >>
 
+=head1 CONTRIBUTORS
+
+This module was based on the original 
+L<Catalyst::Plugin::ConfigLoader|Catalyst::Plugin::ConfigLoader>
+module by Brian Cassidy C<< <bricas@cpan.org> >>.
+
+With ideas and support from Matt S Trout C<< <mst@shadowcatsystems.co.uk> >>.
 
 =head1 LICENCE AND COPYRIGHT
 
@@ -201,7 +267,6 @@ Copyright (c) 2006, Portugal Telecom C<< http://www.sapo.pt/ >>. All rights rese
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
-
 
 =head1 DISCLAIMER OF WARRANTY
 
@@ -225,3 +290,13 @@ RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
 FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
+
+=head1 SEE ALSO
+
+L<Catalyst::Plugin::ConfigLoader|Catalyst::Plugin::ConfigLoader> 
+-- now a wrapper around this module.
+
+=cut
+
+1; # Magic true value required at end of module
+

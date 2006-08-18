@@ -41,11 +41,28 @@ sub load {
     my $class = shift;
     my $file  = shift;
 
+    # work around bug (?) in Config::General
+    return if $class->_test_perl($file);
+
     require Config::General;
     my $configfile = Config::General->new( $file );
     my $config     = { $configfile->getall };
     
     return $config;
+}
+
+# this is a bit of a hack but necessary, because Config::General is *far* too lax
+# about what it will load -- specifically, it seems to be quite happy to load a Perl
+# config file (ie, a file which is valid Perl and creates a hashref) as if it were
+# an Apache-style configuration file, presumably due to laziness on the part of the
+# developer.
+
+sub _test_perl {
+    my ($class, $file) = @_;
+    my $is_perl_src;
+    eval { $is_perl_src = do "$file"; };
+    delete $INC{$file}; # so we don't screw stuff later on
+    return defined $is_perl_src;
 }
 
 =head1 AUTHOR
@@ -56,9 +73,19 @@ sub load {
 
 =back
 
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item * Joel Bernstein C<< <rataxis@cpan.org> >>
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2006 by Brian Cassidy
+
+Portions Copyright 2006 Portugal Telecom
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
@@ -78,3 +105,4 @@ it under the same terms as Perl itself.
 =cut
 
 1;
+
