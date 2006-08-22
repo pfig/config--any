@@ -7,10 +7,11 @@ lib/Config/Any/JSON.pm
 lib/Config/Any/Perl.pm
 lib/Config/Any/XML.pm
 lib/Config/Any/YAML.pm
-MANIFEST
-META.yml			# Will be created by "make dist"
+Makefile.PL
+MANIFEST			This list of files
 README
 t/01-use.t
+t/10-branches.t
 t/20-parse.t
 t/50-general.t
 t/51-ini.t
@@ -24,5 +25,6 @@ t/conf/conf.json
 t/conf/conf.pl
 t/conf/conf.xml
 t/conf/conf.yml
+t/conf/conf2.ini
 t/pod-coverage.t
 t/pod.t
