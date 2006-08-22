@@ -7,7 +7,6 @@ lib/Config/Any/JSON.pm
 lib/Config/Any/Perl.pm
 lib/Config/Any/XML.pm
 lib/Config/Any/YAML.pm
-Makefile.PL
 MANIFEST
 META.yml			# Will be created by "make dist"
 README
