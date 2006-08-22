@@ -42,7 +42,7 @@ sub load {
     my $file  = shift;
 
     # work around bug (?) in Config::General
-    return if $class->_test_perl($file);
+#   return if $class->_test_perl($file);
 
     require Config::General;
     my $configfile = Config::General->new( $file );

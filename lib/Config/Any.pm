@@ -134,16 +134,26 @@ sub _load {
 
     my $final_configs       = [];
     my $originally_loaded   = {};
+	my %files = map { $_ => 1 } @$files_ref;
 
     for my $loader ( $class->plugins ) {
+		last unless keys %files;
+#	warn "loader: $loader\n";
         my %ext = map { $_ => 1 } $loader->extensions;
         FILE:
-        for my $filename (@$files_ref) {
+        for my $filename (keys %files) {
             if (defined $use_ext) {
+#			warn "using file extension to decide which loader to use for file $filename\n";
+				my $matched_ext = 0;
+                EXT:
                 for my $e (keys %ext) {
-                    my ($fileext) = $filename =~ m{ \. $e \z }xms;
-                    next FILE unless exists $ext{$fileext};
+#				warn "trying ext $e\n";
+                    next EXT  unless $filename =~ m{ \. $e \z }xms; 
+#					warn "filename $filename matched extension $e\n";
+                    next FILE unless exists $ext{$e};
+					$matched_ext = 1;
                 }
+				next FILE unless $matched_ext;
             }
 
             my $config;
@@ -152,6 +162,8 @@ sub _load {
 			};
 			next if $EVAL_ERROR;
             next if !$config;
+			delete $files{$filename};
+#			warn "loader $loader loaded file $filename\n";
             $filter_cb->( $config ) if defined $filter_cb;
             push @$final_configs, { $filename => $config };
         }

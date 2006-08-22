@@ -42,7 +42,6 @@ Attempts to load C<$file> as a Perl file.
 sub load {
     my $class = shift;
     my $file  = shift;
-
     return eval { require $file };
 }
 

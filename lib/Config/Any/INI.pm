@@ -43,11 +43,23 @@ sub load {
 
     require Config::Tiny;
     my $config = Config::Tiny->read( $file );
-    my $main   = delete $config->{ _ };
-    
-    $config->{ $_ } = $main->{ $_ } for keys %$main;
 
-    return $config;
+    my $main   = delete $config->{ _ };
+	my $out;
+	$out->{$_} = $main->{$_} for keys %$main;
+
+  	for my $k (keys %$config) {
+		my @keys = split /\s+/, $k;
+		my $ref = $config->{$k};
+
+		if (@keys > 1) {
+			my ($a, $b) = @keys[0,1];
+			$out->{$a}->{$b} = $ref;
+		} else {
+			$out->{$k} = $ref;
+		}
+	}
+    return $out;
 }
 
 =head1 AUTHOR
@@ -55,6 +67,8 @@ sub load {
 =over 4 
 
 =item * Brian Cassidy E<lt>bricas@cpan.orgE<gt>
+
+=item * Joel Bernstein E<lt>rataxis@cpan.orgE<gt>
 
 =back
 
