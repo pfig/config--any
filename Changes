@@ -1,5 +1,7 @@
 Revision history for Config-Any
 
-0.0.1  Mon Aug  7 15:15:15 2006
-       Initial release.
+0.01 - 0.03 dev releases
+
+0.04  Mon Aug  7 15:15:15 2006
+       Initial CPAN-worthy release with proper test suite
 

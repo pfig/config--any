@@ -6,7 +6,7 @@ use Carp;
 use Module::Pluggable::Object ();
 use English qw(-no_match_vars);
 
-our $VERSION = (qw$Rev: $)[-1];
+our $VERSION = '0.04';
 
 =head1 NAME
 
