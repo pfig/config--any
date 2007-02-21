@@ -3,6 +3,8 @@ package Config::Any::INI;
 use strict;
 use warnings;
 
+our $MAP_SECTION_SPACE_TO_NESTED_KEY = 1;
+
 =head1 NAME
 
 Config::Any::INI - Load INI config files
@@ -49,7 +51,7 @@ sub load {
 	$out->{$_} = $main->{$_} for keys %$main;
 
   	for my $k (keys %$config) {
-		my @keys = split /\s+/, $k;
+		my @keys = split /\s+/, $k if $MAP_SECTION_SPACE_TO_NESTED_KEY;
 		my $ref = $config->{$k};
 
 		if (@keys > 1) {
@@ -61,6 +63,25 @@ sub load {
 	}
     return $out;
 }
+
+=head1 PACKAGE VARIABLES
+
+=over 4
+
+=item $MAP_SECTION_SPACE_TO_NESTED_KEY (boolean)
+
+This variable controls whether spaces in INI section headings will be expanded into nested hash keys.
+e.g. it controls whether [Full Power] maps to $config->{'Full Power'} or $config->{'Full'}->{'Power'}
+
+By default it is set to 1 (i.e. true). 
+
+Set it to 0 to preserve literal spaces in section headings:
+
+    use Config::Any;
+    use Config::Any::INI;
+    $Config::Any::INI::MAP_SECTION_SPACE_TO_NESTED_KEY = 0;
+
+=back
 
 =head1 AUTHOR
 
@@ -74,7 +95,7 @@ sub load {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Brian Cassidy
+Copyright 2006 by Brian Cassidy, portions copyright 2006, 2007 by Joel Bernstein
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 

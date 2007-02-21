@@ -1,5 +1,8 @@
 package MockApp;
+use strict;
+use warnings;
 
+$|++;
 use Test::More tests => 54;
 use Scalar::Util qw(blessed reftype);
 use Config::Any;
@@ -11,7 +14,7 @@ use Config::Any::XML;
 use Config::Any::YAML;
 
 
-my %ext_map = (
+our %ext_map = (
 	conf => 'Config::Any::General',
 	ini  => 'Config::Any::INI',
 	json => 'Config::Any::JSON',
@@ -20,20 +23,24 @@ my %ext_map = (
 	yml  => 'Config::Any::YAML'
 );
 
-my @files = map { "t/conf/$_" } 
-	qw(conf.conf conf.ini conf.json conf.pl conf.xml conf.yml);
+sub load_parser_for {
+    my $f = shift;
+    return unless $f;
 
-for my $f (@files) {
 	my ($ext) = $f =~ m{ \. ( [^\.]+ ) \z }xms;
 	my $mod = $ext_map{$ext};
 	my $mod_load_result;
 	eval { $mod_load_result = $mod->load( $f ); delete $INC{$f} if $ext eq 'pl' };
+    return $@ ? (1,$mod) : (0,$mod);
+}
+
+for my $f (map { "t/conf/conf.$_" } keys %ext_map) {
+    my ($skip,$mod) = load_parser_for($f);
 	SKIP: {
-		my $skip = !!$@;
 		skip "File loading backend for $mod not found", 9 if $skip;
 	
 		ok(my $c_arr = Config::Any->load_files({files=>[$f], use_ext=>1}), 
-			"load_files with use_ext works");
+			"load_files with use_ext works [$f]");
 		ok(my $c = $c_arr->[0], "load_files returns an arrayref");
 		
 		ok(ref $c, "load_files arrayref contains a ref");

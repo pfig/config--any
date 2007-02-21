@@ -6,7 +6,7 @@ use Carp;
 use Module::Pluggable::Object ();
 use English qw(-no_match_vars);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ Config::Any - Load configuration from different file formats, transparently
 
 =head1 VERSION
 
-This document describes Config::Any version 0.0.4
+This document describes Config::Any version 0.0.5
 
 =head1 SYNOPSIS
 
@@ -69,6 +69,11 @@ be aware that you will lose flexibility -- for example, a file called C<myapp.cf
 containing YAML data will not be offered to the YAML plugin, whereas C<myapp.yml>
 or C<myapp.yaml> would be.
 
+C<load_files()> also supports a 'force_plugins' parameter, whose value should be an
+arrayref of plugin names like C<Config::Any::INI>. Its intended use is to allow the use 
+of a non-standard file extension while forcing it to be offered to a particular parser.
+It is not compatible with 'use_ext'. 
+
 =cut
 
 sub load_files {
@@ -79,10 +84,10 @@ sub load_files {
         return;
     }
 
-    my $files = [ grep { -f $_ } @{$args->{files}} ];
-    my $filter_cb = delete $args->{filter};
-    my $use_ext   = delete $args->{use_ext};
-    return $class->_load($files, $filter_cb, $use_ext);
+    my %load_args = map { $_ => defined $args->{$_} ? $args->{$_} : undef } 
+        qw(filter use_ext force_plugins);
+    $load_args{files} = [ grep { -f $_ } @{$args->{files}} ];
+    return $class->_load(\%load_args);
 }
 
 =head2 load_stems( )
@@ -108,9 +113,18 @@ sub load_stems {
         return;
     }
         
-    my $filter_cb = delete $args->{filter};
-    my $use_ext   = delete $args->{use_ext};
-    my $stems = $args->{stems};
+    my %load_args = map { $_ => defined $args->{$_} ? $args->{$_} : undef } 
+        qw(filter use_ext force_plugins);
+
+    my $filenames = $class->_stems_to_files($args->{stems});
+    $load_args{files} = [ grep { -f $_ } @{$filenames} ];
+    return $class->_load(\%load_args);
+}
+
+sub _stems_to_files {
+    my ($class, $stems) = @_;
+    return unless defined $stems;
+
     my @files;
     STEM:
     for my $s (@$stems) {
@@ -122,37 +136,46 @@ sub load_stems {
             last EXT;
         }
     }
-    return $class->_load(\@files, $filter_cb, $use_ext);
+    \@files;
 }
+
+sub _maphash (@) { map { $_ => 1 } @_ } # sugar
 
 # this is where we do the real work
 # it's a private class-method because users should use the interface described
 # in the POD.
 sub _load {
-    my ($class, $files_ref, $filter_cb, $use_ext) = @_;
+    my ($class, $args) = @_;
+    my ($files_ref, $filter_cb, $use_ext, $force_plugins_ref) = 
+        @{$args}{qw(files filter use_ext force_plugins)};
     croak "_load requires a arrayref of file paths" unless defined $files_ref;
+
+	my %files           = _maphash @$files_ref;
+    my %force_plugins   = _maphash @$force_plugins_ref;
+    my $enforcing       = keys %force_plugins ? 1 : 0;
 
     my $final_configs       = [];
     my $originally_loaded   = {};
-	my %files = map { $_ => 1 } @$files_ref;
 
+    # perform a separate file loop for each loader
     for my $loader ( $class->plugins ) {
+        next if $enforcing && not defined $force_plugins{$loader};
 		last unless keys %files;
-#	warn "loader: $loader\n";
-        my %ext = map { $_ => 1 } $loader->extensions;
+        my %ext = _maphash $loader->extensions;
+
         FILE:
         for my $filename (keys %files) {
-            if (defined $use_ext) {
-#			warn "using file extension to decide which loader to use for file $filename\n";
+            # use file extension to decide whether this loader should try this file
+            # use_ext => 1 hits this block
+            if (defined $use_ext && !$enforcing) {
 				my $matched_ext = 0;
                 EXT:
                 for my $e (keys %ext) {
-#				warn "trying ext $e\n";
                     next EXT  unless $filename =~ m{ \. $e \z }xms; 
-#					warn "filename $filename matched extension $e\n";
                     next FILE unless exists $ext{$e};
 					$matched_ext = 1;
                 }
+
 				next FILE unless $matched_ext;
             }
 
@@ -160,11 +183,14 @@ sub _load {
 			eval {
 				$config = $loader->load( $filename );
 			};
-			next if $EVAL_ERROR;
+
+			next if $EVAL_ERROR; # if it croaked or warned, we can't use it
             next if !$config;
 			delete $files{$filename};
-#			warn "loader $loader loaded file $filename\n";
+
+            # post-process config with a filter callback, if we got one
             $filter_cb->( $config ) if defined $filter_cb;
+
             push @$final_configs, { $filename => $config };
         }
     }
@@ -273,9 +299,12 @@ module by Brian Cassidy C<< <bricas@cpan.org> >>.
 
 With ideas and support from Matt S Trout C<< <mst@shadowcatsystems.co.uk> >>.
 
+Further enhancements suggested by Evan Kaufman C<< <evank@cpan.org> >>.
+
 =head1 LICENCE AND COPYRIGHT
 
 Copyright (c) 2006, Portugal Telecom C<< http://www.sapo.pt/ >>. All rights reserved.
+Portions copyright 2007, Joel Bernstein C<< <rataxis@cpan.org> >>.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
@@ -310,5 +339,4 @@ L<Catalyst::Plugin::ConfigLoader|Catalyst::Plugin::ConfigLoader>
 
 =cut
 
-1; # Magic true value required at end of module
-
+"Drink more beer";
