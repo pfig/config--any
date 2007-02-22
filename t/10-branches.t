@@ -1,5 +1,4 @@
 use Test::More tests => 9;
-use Test::Exception;
 use Config::Any;
 
 ok ( ! Config::Any->load_files(),  "load_files expects args" );

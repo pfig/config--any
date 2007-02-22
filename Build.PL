@@ -13,7 +13,7 @@ my $builder = Module::Build->new(
 		'Module::Pluggable' => '3.01'
     },
     add_to_cleanup      => [ 'Config-Any-*' ],
-	create_makefile_pl => 'traditional',
+    create_makefile_pl => 'traditional',
 );
 
 $builder->create_build_script();

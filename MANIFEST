@@ -19,7 +19,9 @@ t/52-json.t
 t/53-perl.t
 t/54-xml.t
 t/55-yaml.t
+t/61-features.t
 t/conf/conf.conf
+t/conf/conf.foo
 t/conf/conf.ini
 t/conf/conf.json
 t/conf/conf.pl
@@ -28,3 +30,4 @@ t/conf/conf.yml
 t/conf/conf2.ini
 t/pod-coverage.t
 t/pod.t
+META.yml
