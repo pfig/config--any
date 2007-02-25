@@ -17,3 +17,8 @@ Revision history for Config-Any
 0.06 Thu Feb 22 21:05:00 2007
 	removed reference to Test::Exception, bumped version number
 
+0.06_01 Sun Feb 25 19:23:00 2007
+	fixed bug [rt.cpan.org #25143] make tests fails
+		- t/61_features.t had 1 more test added than was set to skip if the INI parser
+		  was not installed. Fixed by s/9/10/ on the skip() line.
+

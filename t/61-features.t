@@ -14,7 +14,7 @@ our $cfg_file = 't/conf/conf.foo';
 
 eval { Config::Any::INI->load($cfg_file); };
 SKIP: {
-    skip "File loading backend for INI not found", 9 if $@;
+    skip "File loading backend for INI not found", 10 if $@;
 
     ok( my $c_arr = Config::Any->load_files({ 
             files           => [ $cfg_file ], 
