@@ -47,20 +47,20 @@ sub load {
     my $config = Config::Tiny->read( $file );
 
     my $main   = delete $config->{ _ };
-	my $out;
-	$out->{$_} = $main->{$_} for keys %$main;
+    my $out;
+    $out->{$_} = $main->{$_} for keys %$main;
 
-  	for my $k (keys %$config) {
-		my @keys = split /\s+/, $k if $MAP_SECTION_SPACE_TO_NESTED_KEY;
-		my $ref = $config->{$k};
+    for my $k (keys %$config) {
+        my @keys = split /\s+/, $k if $MAP_SECTION_SPACE_TO_NESTED_KEY;
+        my $ref = $config->{$k};
 
-		if (@keys > 1) {
-			my ($a, $b) = @keys[0,1];
-			$out->{$a}->{$b} = $ref;
-		} else {
-			$out->{$k} = $ref;
-		}
-	}
+        if (@keys > 1) {
+            my ($a, $b) = @keys[0,1];
+            $out->{$a}->{$b} = $ref;
+        } else {
+            $out->{$k} = $ref;
+        }
+    }
     return $out;
 }
 

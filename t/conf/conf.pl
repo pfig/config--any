@@ -1,13 +1,13 @@
 {
     name => 'TestApp',
-	Component => {
-		'Controller::Foo' => {
-			foo => 'bar'
-		}
+    Component => {
+        'Controller::Foo' => {
+            foo => 'bar'
+        }
     },
-	Model => {
-		'Model::Baz' => {
-			qux => 'xyzzy'
-		}
-	}
+    Model => {
+        'Model::Baz' => {
+            qux => 'xyzzy'
+        }
+    }
 }

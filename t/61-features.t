@@ -34,9 +34,9 @@ SKIP: {
     is(substr($cfgref,0,4), "HASH", "hashref cfg");
 
     is( $cfg->{name}, 'TestApp', "appname parses" );
-    is( $cfg->{Component}{ "Controller::Foo" }->{ foo }, 'bar', 		  
+    is( $cfg->{Component}{ "Controller::Foo" }->{ foo }, 'bar',           
         "component->cntrlr->foo = bar" );
-    is( $cfg->{Model}{ "Model::Baz" }->{ qux }, 		 'xyzzy',		  
+    is( $cfg->{Model}{ "Model::Baz" }->{ qux },          'xyzzy',         
         "model->model::baz->qux = xyzzy" );
 
 

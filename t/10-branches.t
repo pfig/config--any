@@ -5,12 +5,12 @@ ok ( ! Config::Any->load_files(),  "load_files expects args" );
 ok ( ! Config::Any->load_stems(),  "load_stems expects args" );
 
 {
-	my @warnings;
-	local $SIG{__WARN__} = sub { push @warnings, @_ };
-	Config::Any->load_files({});
-	like (shift @warnings, qr/^no files specified/, "load_files expects files");
-	Config::Any->load_stems({});
-	like (shift @warnings, qr/^no stems specified/, "load_stems expects stems");
+    my @warnings;
+    local $SIG{__WARN__} = sub { push @warnings, @_ };
+    Config::Any->load_files({});
+    like (shift @warnings, qr/^no files specified/, "load_files expects files");
+    Config::Any->load_stems({});
+    like (shift @warnings, qr/^no stems specified/, "load_stems expects stems");
 }
 
 my @files = glob("t/conf/conf.*");

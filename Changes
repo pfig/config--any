@@ -1,9 +1,15 @@
 Revision history for Config-Any
 
-0.01 - 0.03 dev releases
+0.07 Mon Feb 26 2007
+    promote 0.06_01 to non-dev.
 
-0.04  Mon Aug  7 15:15:15 2006
-       Initial CPAN-worthy release with proper test suite
+0.06_01 Sun Feb 25 19:23:00 2007
+	fixed bug [rt.cpan.org #25143] make tests fails
+		- t/61_features.t had 1 more test added than was set to skip if the INI parser
+		  was not installed. Fixed by s/9/10/ on the skip() line.
+
+0.06 Thu Feb 22 21:05:00 2007
+	removed reference to Test::Exception, bumped version number
 
 0.05  Wed Feb 21 22:00:00 2007
 	added support for:
@@ -14,11 +20,8 @@ Revision history for Config-Any
 			to nested hashrefs 
 		both as requested by Evan Kaufman	
 
-0.06 Thu Feb 22 21:05:00 2007
-	removed reference to Test::Exception, bumped version number
+0.04  Mon Aug  7 15:15:15 2006
+       Initial CPAN-worthy release with proper test suite
 
-0.06_01 Sun Feb 25 19:23:00 2007
-	fixed bug [rt.cpan.org #25143] make tests fails
-		- t/61_features.t had 1 more test added than was set to skip if the INI parser
-		  was not installed. Fixed by s/9/10/ on the skip() line.
+0.01 - 0.03 dev releases
 
