@@ -6,7 +6,7 @@ use Carp;
 use Module::Pluggable::Object ();
 use English qw(-no_match_vars);
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ Config::Any - Load configuration from different file formats, transparently
 
 =head1 VERSION
 
-This document describes Config::Any version 0.0.7
+This document describes Config::Any version 0.0.8
 
 =head1 SYNOPSIS
 
@@ -85,7 +85,7 @@ sub load_files {
     }
 
     my %load_args = map { $_ => defined $args->{$_} ? $args->{$_} : undef } 
-        qw(filter use_ext force_plugins);
+        qw(filter use_ext force_plugins driver_args);
     $load_args{files} = [ grep { -f $_ } @{$args->{files}} ];
     return $class->_load(\%load_args);
 }
@@ -163,6 +163,9 @@ sub _load {
         last unless keys %files;
         my %ext = _maphash $loader->extensions;
 
+        my ($loader_class) = $loader =~ /::([^:]+)$/;
+        my $driver_args = $args->{driver_args}{$loader_class} || {};
+ 
         FILE:
         for my $filename (keys %files) {
             # use file extension to decide whether this loader should try this file
@@ -181,7 +184,7 @@ sub _load {
 
             my $config;
             eval {
-                $config = $loader->load( $filename );
+                $config = $loader->load( $filename, $driver_args );
             };
 
             next if $EVAL_ERROR; # if it croaked or warned, we can't use it

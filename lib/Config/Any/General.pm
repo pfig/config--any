@@ -40,12 +40,15 @@ Attempts to load C<$file> via Config::General.
 sub load {
     my $class = shift;
     my $file  = shift;
+    my $args  = shift || {};
 
     # work around bug (?) in Config::General
 #   return if $class->_test_perl($file);
 
+    $args->{-ConfigFile} = $file;
+
     require Config::General;
-    my $configfile = Config::General->new( $file );
+    my $configfile = Config::General->new( %$args );
     my $config     = { $configfile->getall };
     
     return $config;
