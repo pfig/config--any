@@ -50,8 +50,7 @@ sub load {
     eval { require JSON::Syck; };
     if( $@ ) {
         require JSON;
-        JSON->import;
-        return jsonToObj( $content );
+        return JSON::jsonToObj( $content );
     }
     else {
         return JSON::Syck::Load( $content );

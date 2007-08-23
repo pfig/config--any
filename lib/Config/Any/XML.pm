@@ -42,12 +42,13 @@ Attempts to load C<$file> as an XML file.
 sub load {
     my $class = shift;
     my $file  = shift;
+    my $args  = shift || {};
 
     require XML::Simple;
-    XML::Simple->import;
-    my $config = XMLin( 
+    my $config = XML::Simple::XMLin( 
         $file, 
         ForceArray => [ qw( component model view controller ) ],
+        %$args
     );
 
     return $class->_coerce($config);
