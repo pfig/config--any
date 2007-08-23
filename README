@@ -3,7 +3,7 @@ NAME
     transparently
 
 VERSION
-    This document describes Config::Any version 0.0.7
+    This document describes Config::Any version 0.0.8
 
 SYNOPSIS
         use Config::Any;
@@ -35,7 +35,7 @@ DESCRIPTION
 
 INTERFACE
   load_files( )
-        Config::Any->load_files({files => \@files]});
+        Config::Any->load_files({files => \@files});
         Config::Any->load_files({files => \@files, filter  => \&filter});
         Config::Any->load_files({files => \@files, use_ext => 1});
 
@@ -60,6 +60,13 @@ INTERFACE
     intended use is to allow the use of a non-standard file extension while
     forcing it to be offered to a particular parser. It is not compatible
     with 'use_ext'.
+
+    You can supply a "driver_args" hashref to pass special options to a
+    particular parser object. Example:
+
+        Config::Any->load_files( { files => \@files, driver_args => {
+            General => { -LowerCaseNames => 1 }
+        } )
 
   load_stems( )
         Config::Any->load_stems({stems => \@stems]});
