@@ -3,6 +3,8 @@ package Config::Any::Perl;
 use strict;
 use warnings;
 
+my %cache;
+
 =head1 NAME
 
 Config::Any::Perl - Load Perl config files
@@ -42,7 +44,14 @@ Attempts to load C<$file> as a Perl file.
 sub load {
     my $class = shift;
     my $file  = shift;
-    return eval { require $file };
+    my $content;
+
+    unless( $content = $cache{ $file } ) {
+        $content = eval { require $file };
+        $cache{ $file } = $content;
+    }
+
+    return $content;
 }
 
 =head1 AUTHOR
