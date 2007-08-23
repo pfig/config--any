@@ -50,7 +50,7 @@ configuration formats.
 
 =head2 load_files( )
 
-    Config::Any->load_files({files => \@files]});
+    Config::Any->load_files({files => \@files});
     Config::Any->load_files({files => \@files, filter  => \&filter});
     Config::Any->load_files({files => \@files, use_ext => 1});
 
@@ -73,6 +73,13 @@ C<load_files()> also supports a 'force_plugins' parameter, whose value should be
 arrayref of plugin names like C<Config::Any::INI>. Its intended use is to allow the use 
 of a non-standard file extension while forcing it to be offered to a particular parser.
 It is not compatible with 'use_ext'. 
+
+You can supply a C<driver_args> hashref to pass special options to a particular
+parser object. Example:
+
+    Config::Any->load_files( { files => \@files, driver_args => {
+        General => { -LowerCaseNames => 1 }
+    } )
 
 =cut
 
@@ -114,7 +121,7 @@ sub load_stems {
     }
         
     my %load_args = map { $_ => defined $args->{$_} ? $args->{$_} : undef } 
-        qw(filter use_ext force_plugins);
+        qw(filter use_ext force_plugins driver_args);
 
     my $filenames = $class->_stems_to_files($args->{stems});
     $load_args{files} = [ grep { -f $_ } @{$filenames} ];
