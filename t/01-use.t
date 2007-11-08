@@ -1,6 +1,6 @@
 use Test::More tests => 6;
 
-BEGIN { 
+BEGIN {
     use_ok( 'Config::Any' );
     use_ok( 'Config::Any::INI' );
     use_ok( 'Config::Any::JSON' );

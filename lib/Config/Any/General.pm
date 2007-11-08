@@ -43,14 +43,14 @@ sub load {
     my $args  = shift || {};
 
     # work around bug (?) in Config::General
-#   return if $class->_test_perl($file);
+    #   return if $class->_test_perl($file);
 
-    $args->{-ConfigFile} = $file;
+    $args->{ -ConfigFile } = $file;
 
     require Config::General;
     my $configfile = Config::General->new( %$args );
     my $config     = { $configfile->getall };
-    
+
     return $config;
 }
 
@@ -61,10 +61,10 @@ sub load {
 # developer.
 
 sub _test_perl {
-    my ($class, $file) = @_;
+    my ( $class, $file ) = @_;
     my $is_perl_src;
     eval { $is_perl_src = do "$file"; };
-    delete $INC{$file}; # so we don't screw stuff later on
+    delete $INC{ $file };    # so we don't screw stuff later on
     return defined $is_perl_src;
 }
 

@@ -48,7 +48,7 @@ sub load {
     close $fh;
 
     eval { require JSON::Syck; };
-    if( $@ ) {
+    if ( $@ ) {
         require JSON;
         return JSON::jsonToObj( $content );
     }

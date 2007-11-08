@@ -1,7 +1,8 @@
 package Config::Any;
-# $Id: $
-use warnings;
+
 use strict;
+use warnings;
+
 use Carp;
 use Module::Pluggable::Object ();
 use English qw(-no_match_vars);
@@ -84,17 +85,18 @@ parser object. Example:
 =cut
 
 sub load_files {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
     return unless defined $args;
-    unless (exists $args->{files}) {
+    unless ( exists $args->{ files } ) {
         warn "no files specified";
         return;
     }
 
-    my %load_args = map { $_ => defined $args->{$_} ? $args->{$_} : undef } 
+    my %load_args
+        = map { $_ => defined $args->{ $_ } ? $args->{ $_ } : undef }
         qw(filter use_ext force_plugins driver_args);
-    $load_args{files} = [ grep { -f $_ } @{$args->{files}} ];
-    return $class->_load(\%load_args);
+    $load_args{ files } = [ grep { -f $_ } @{ $args->{ files } } ];
+    return $class->_load( \%load_args );
 }
 
 =head2 load_stems( )
@@ -113,30 +115,31 @@ parameters. Please read the C<load_files()> documentation before using this meth
 =cut
 
 sub load_stems {
-    my ($class, $args) = @_;
+    my ( $class, $args ) = @_;
     return unless defined $args;
-    unless (exists $args->{stems}) {
+    unless ( exists $args->{ stems } ) {
         warn "no stems specified";
         return;
     }
-        
-    my %load_args = map { $_ => defined $args->{$_} ? $args->{$_} : undef } 
+
+    my %load_args
+        = map { $_ => defined $args->{ $_ } ? $args->{ $_ } : undef }
         qw(filter use_ext force_plugins driver_args);
 
-    my $filenames = $class->_stems_to_files($args->{stems});
-    $load_args{files} = [ grep { -f $_ } @{$filenames} ];
-    return $class->_load(\%load_args);
+    my $filenames = $class->_stems_to_files( $args->{ stems } );
+    $load_args{ files } = [ grep { -f $_ } @{ $filenames } ];
+    return $class->_load( \%load_args );
 }
 
 sub _stems_to_files {
-    my ($class, $stems) = @_;
+    my ( $class, $stems ) = @_;
     return unless defined $stems;
 
     my @files;
-    STEM:
-    for my $s (@$stems) {
-        EXT:
-        for my $ext ($class->extensions) {
+STEM:
+    for my $s ( @$stems ) {
+    EXT:
+        for my $ext ( $class->extensions ) {
             my $file = "$s.$ext";
             next EXT unless -f $file;
             push @files, $file;
@@ -146,43 +149,46 @@ sub _stems_to_files {
     \@files;
 }
 
-sub _maphash (@) { map { $_ => 1 } @_ } # sugar
+sub _maphash (@) {
+    map { $_ => 1 } @_;
+}    # sugar
 
 # this is where we do the real work
 # it's a private class-method because users should use the interface described
 # in the POD.
 sub _load {
-    my ($class, $args) = @_;
-    my ($files_ref, $filter_cb, $use_ext, $force_plugins_ref) = 
-        @{$args}{qw(files filter use_ext force_plugins)};
+    my ( $class, $args ) = @_;
+    my ( $files_ref, $filter_cb, $use_ext, $force_plugins_ref )
+        = @{ $args }{ qw(files filter use_ext force_plugins) };
     croak "_load requires a arrayref of file paths" unless defined $files_ref;
 
-    my %files           = _maphash @$files_ref;
-    my %force_plugins   = _maphash @$force_plugins_ref;
-    my $enforcing       = keys %force_plugins ? 1 : 0;
+    my %files         = _maphash @$files_ref;
+    my %force_plugins = _maphash @$force_plugins_ref;
+    my $enforcing     = keys %force_plugins ? 1 : 0;
 
-    my $final_configs       = [];
-    my $originally_loaded   = {};
+    my $final_configs     = [];
+    my $originally_loaded = {};
 
     # perform a separate file loop for each loader
     for my $loader ( $class->plugins ) {
-        next if $enforcing && not defined $force_plugins{$loader};
+        next if $enforcing && not defined $force_plugins{ $loader };
         last unless keys %files;
         my %ext = _maphash $loader->extensions;
 
-        my ($loader_class) = $loader =~ /::([^:]+)$/;
-        my $driver_args = $args->{driver_args}{$loader_class} || {};
- 
-        FILE:
-        for my $filename (keys %files) {
-            # use file extension to decide whether this loader should try this file
-            # use_ext => 1 hits this block
-            if (defined $use_ext && !$enforcing) {
+        my ( $loader_class ) = $loader =~ /::([^:]+)$/;
+        my $driver_args = $args->{ driver_args }{ $loader_class } || {};
+
+    FILE:
+        for my $filename ( keys %files ) {
+
+       # use file extension to decide whether this loader should try this file
+       # use_ext => 1 hits this block
+            if ( defined $use_ext && !$enforcing ) {
                 my $matched_ext = 0;
-                EXT:
-                for my $e (keys %ext) {
-                    next EXT  unless $filename =~ m{ \. $e \z }xms; 
-                    next FILE unless exists $ext{$e};
+            EXT:
+                for my $e ( keys %ext ) {
+                    next EXT unless $filename =~ m{ \. $e \z }xms;
+                    next FILE unless exists $ext{ $e };
                     $matched_ext = 1;
                 }
 
@@ -190,13 +196,11 @@ sub _load {
             }
 
             my $config;
-            eval {
-                $config = $loader->load( $filename, $driver_args );
-            };
+            eval { $config = $loader->load( $filename, $driver_args ); };
 
-            next if $EVAL_ERROR; # if it croaked or warned, we can't use it
+            next if $EVAL_ERROR;    # if it croaked or warned, we can't use it
             next if !$config;
-            delete $files{$filename};
+            delete $files{ $filename };
 
             # post-process config with a filter callback, if we got one
             $filter_cb->( $config ) if defined $filter_cb;
@@ -217,7 +221,7 @@ more information.
 =cut
 
 sub finder {
-    my $class = shift;
+    my $class  = shift;
     my $finder = Module::Pluggable::Object->new(
         search_path => [ __PACKAGE__ ],
         require     => 1
@@ -248,7 +252,7 @@ parameter to those methods.
 sub extensions {
     my $class = shift;
     my @ext = map { $_->extensions } $class->plugins;
-    return wantarray ? @ext : [@ext];
+    return wantarray ? @ext : [ @ext ];
 }
 
 =head1 DIAGNOSTICS

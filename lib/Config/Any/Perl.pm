@@ -46,7 +46,7 @@ sub load {
     my $file  = shift;
     my $content;
 
-    unless( $content = $cache{ $file } ) {
+    unless ( $content = $cache{ $file } ) {
         $content = eval { require $file };
         $cache{ $file } = $content;
     }

@@ -42,7 +42,7 @@ sub load {
     my $file  = shift;
 
     eval { require YAML::Syck; };
-    if( $@ ) {
+    if ( $@ ) {
         require YAML;
         return YAML::LoadFile( $file );
     }
