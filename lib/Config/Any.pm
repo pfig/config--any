@@ -5,7 +5,6 @@ use warnings;
 
 use Carp;
 use Module::Pluggable::Object ();
-use English qw(-no_match_vars);
 
 our $VERSION = '0.09';
 
@@ -15,7 +14,7 @@ Config::Any - Load configuration from different file formats, transparently
 
 =head1 VERSION
 
-This document describes Config::Any version 0.0.8
+This document describes Config::Any version 0.09
 
 =head1 SYNOPSIS
 
@@ -49,7 +48,7 @@ configuration formats.
 
 =cut
 
-=head2 load_files( )
+=head2 load_files( \%args )
 
     Config::Any->load_files( { files => \@files } );
     Config::Any->load_files( { files => \@files, filter  => \&filter } );
@@ -95,7 +94,7 @@ sub load_files {
     return $class->_load( $args );
 }
 
-=head2 load_stems( )
+=head2 load_stems( \%args )
 
     Config::Any->load_stems( { stems => \@stems } );
     Config::Any->load_stems( { stems => \@stems, filter  => \&filter } );
@@ -141,7 +140,7 @@ sub _load {
 
     my %files         = map { $_ => 1 } @$files_ref;
     my %force_plugins = map { $_ => 1 } @$force_plugins_ref;
-    my $enforcing     = keys %force_plugins ? 1 : 0;
+    my $enforcing = keys %force_plugins ? 1 : 0;
 
     my $final_configs     = [];
     my $originally_loaded = {};
@@ -176,7 +175,7 @@ sub _load {
             my $config;
             eval { $config = $loader->load( $filename, $driver_args ); };
 
-            next if $EVAL_ERROR;    # if it croaked or warned, we can't use it
+            next if $@;         # if it croaked or warned, we can't use it
             next if !$config;
             delete $files{ $filename };
 
@@ -186,7 +185,8 @@ sub _load {
             push @$final_configs, { $filename => $config };
         }
     }
-    $final_configs;
+
+    return $final_configs;
 }
 
 =head2 finder( )
@@ -237,7 +237,7 @@ sub extensions {
 
 =over
 
-=item C<no files specified> or C<no stems specified>
+=item C<No files specified!> or C<No stems specified!>
 
 The C<load_files()> and C<load_stems()> methods will issue this warning if
 called with an empty list of files/stems to load.
