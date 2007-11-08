@@ -97,9 +97,9 @@ sub load_files {
 
 =head2 load_stems( )
 
-    Config::Any->load_stems({stems => \@stems]});
-    Config::Any->load_stems({stems => \@stems, filter  => \&filter});
-    Config::Any->load_stems({stems => \@stems, use_ext => 1});
+    Config::Any->load_stems( { stems => \@stems } );
+    Config::Any->load_stems( { stems => \@stems, filter  => \&filter } );
+    Config::Any->load_stems( { stems => \@stems, use_ext => 1 } );
 
 C<load_stems()> attempts to load configuration from a list of files which it generates
 by combining the filename stems list passed in the C<stems> parameter with the 
@@ -112,36 +112,23 @@ parameters. Please read the C<load_files()> documentation before using this meth
 
 sub load_stems {
     my ( $class, $args ) = @_;
-    return unless defined $args;
-    unless ( exists $args->{ stems } ) {
-        warn "no stems specified";
+
+    unless ( $args && exists $args->{ stems } ) {
+        warn "No stems specified!";
         return;
     }
 
-    my %load_args
-        = map { $_ => defined $args->{ $_ } ? $args->{ $_ } : undef }
-        qw(filter use_ext force_plugins driver_args);
-
-    $load_args{ files } = $class->_stems_to_files( $args->{ stems } );
-    return $class->_load( \%load_args );
-}
-
-sub _stems_to_files {
-    my ( $class, $stems ) = @_;
-    return unless defined $stems;
-
+    my $stems = delete $args->{ stems };
     my @files;
     for my $s ( @$stems ) {
         for my $ext ( $class->extensions ) {
             push @files, "$s.$ext";
         }
     }
-    return \@files;
-}
 
-sub _maphash { # syntactic sugar
-    map { $_ => 1 } @_;
-} 
+    $args->{ files } = \@files;
+    return $class->_load( $args );
+}
 
 # this is where we do the real work
 # it's a private class-method because users should use the interface described
@@ -152,8 +139,8 @@ sub _load {
         = @{ $args }{ qw(files filter use_ext force_plugins) };
     croak "_load requires a arrayref of file paths" unless defined $files_ref;
 
-    my %files         = _maphash @$files_ref;
-    my %force_plugins = _maphash @$force_plugins_ref;
+    my %files         = map { $_ => 1 } @$files_ref;
+    my %force_plugins = map { $_ => 1 } @$force_plugins_ref;
     my $enforcing     = keys %force_plugins ? 1 : 0;
 
     my $final_configs     = [];
@@ -163,7 +150,7 @@ sub _load {
     for my $loader ( $class->plugins ) {
         next if $enforcing && not defined $force_plugins{ $loader };
         last unless keys %files;
-        my %ext = _maphash $loader->extensions;
+        my %ext = map { $_ => 1 } $loader->extensions;
 
         my ( $loader_class ) = $loader =~ /::([^:]+)$/;
         my $driver_args = $args->{ driver_args }{ $loader_class } || {};
@@ -217,7 +204,7 @@ sub finder {
         search_path => [ __PACKAGE__ ],
         require     => 1
     );
-    $finder;
+    return $finder;
 }
 
 =head2 plugins( )

@@ -1,7 +1,6 @@
-use Test::More tests => 9;
-use Config::Any;
+use Test::More tests => 10;
 
-ok( !Config::Any->load_stems(), "load_stems expects args" );
+use_ok( 'Config::Any' );
 
 {
     my @warnings;
@@ -21,10 +20,17 @@ ok( !Config::Any->load_stems(), "load_stems expects args" );
         "load_files expects files"
     );
 
+    Config::Any->load_stems( );
+    like(
+        shift @warnings,
+        qr/^No stems specified!/,
+        "load_stems expects args"
+    );
+
     Config::Any->load_stems( {} );
     like(
         shift @warnings,
-        qr/^no stems specified/,
+        qr/^No stems specified!/,
         "load_stems expects stems"
     );
 }
