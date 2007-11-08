@@ -1,18 +1,26 @@
 use Test::More tests => 9;
 use Config::Any;
 
-ok( !Config::Any->load_files(), "load_files expects args" );
 ok( !Config::Any->load_stems(), "load_stems expects args" );
 
 {
     my @warnings;
     local $SIG{ __WARN__ } = sub { push @warnings, @_ };
+
+    Config::Any->load_files( );
+    like(
+        shift @warnings,
+        qr/^No files specified!/,
+        "load_files expects args"
+    );
+
     Config::Any->load_files( {} );
     like(
         shift @warnings,
-        qr/^no files specified/,
+        qr/^No files specified!/,
         "load_files expects files"
     );
+
     Config::Any->load_stems( {} );
     like(
         shift @warnings,

@@ -7,7 +7,7 @@ use Carp;
 use Module::Pluggable::Object ();
 use English qw(-no_match_vars);
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 =head1 NAME
 
@@ -51,9 +51,9 @@ configuration formats.
 
 =head2 load_files( )
 
-    Config::Any->load_files({files => \@files});
-    Config::Any->load_files({files => \@files, filter  => \&filter});
-    Config::Any->load_files({files => \@files, use_ext => 1});
+    Config::Any->load_files( { files => \@files } );
+    Config::Any->load_files( { files => \@files, filter  => \&filter } );
+    Config::Any->load_files( { files => \@files, use_ext => 1 } );
 
 C<load_files()> attempts to load configuration from the list of files passed in
 the C<files> parameter, if the file exists.
@@ -86,17 +86,13 @@ parser object. Example:
 
 sub load_files {
     my ( $class, $args ) = @_;
-    return unless defined $args;
-    unless ( exists $args->{ files } ) {
-        warn "no files specified";
+
+    unless ( $args && exists $args->{ files } ) {
+        warn "No files specified!";
         return;
     }
 
-    my %load_args
-        = map { $_ => defined $args->{ $_ } ? $args->{ $_ } : undef }
-        qw(filter use_ext force_plugins driver_args);
-    $load_args{ files } = [ grep { -f $_ } @{ $args->{ files } } ];
-    return $class->_load( \%load_args );
+    return $class->_load( $args );
 }
 
 =head2 load_stems( )
@@ -126,8 +122,7 @@ sub load_stems {
         = map { $_ => defined $args->{ $_ } ? $args->{ $_ } : undef }
         qw(filter use_ext force_plugins driver_args);
 
-    my $filenames = $class->_stems_to_files( $args->{ stems } );
-    $load_args{ files } = [ grep { -f $_ } @{ $filenames } ];
+    $load_args{ files } = $class->_stems_to_files( $args->{ stems } );
     return $class->_load( \%load_args );
 }
 
@@ -136,22 +131,17 @@ sub _stems_to_files {
     return unless defined $stems;
 
     my @files;
-STEM:
     for my $s ( @$stems ) {
-    EXT:
         for my $ext ( $class->extensions ) {
-            my $file = "$s.$ext";
-            next EXT unless -f $file;
-            push @files, $file;
-            last EXT;
+            push @files, "$s.$ext";
         }
     }
-    \@files;
+    return \@files;
 }
 
-sub _maphash (@) {
+sub _maphash { # syntactic sugar
     map { $_ => 1 } @_;
-}    # sugar
+} 
 
 # this is where we do the real work
 # it's a private class-method because users should use the interface described
@@ -180,6 +170,7 @@ sub _load {
 
     FILE:
         for my $filename ( keys %files ) {
+            next unless -f $filename;
 
        # use file extension to decide whether this loader should try this file
        # use_ext => 1 hits this block
@@ -252,7 +243,7 @@ parameter to those methods.
 sub extensions {
     my $class = shift;
     my @ext = map { $_->extensions } $class->plugins;
-    return wantarray ? @ext : [ @ext ];
+    return wantarray ? @ext : \@ext;
 }
 
 =head1 DIAGNOSTICS

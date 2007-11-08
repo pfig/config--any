@@ -1,5 +1,8 @@
 Revision history for Config-Any
 
+0.09 Thu Nov 08 2007
+    code and pod cleanups
+
 0.08 Thu Aug 23 2007
     pass config options to each parser
     fix for loading the same perl config twice (RT #28812)
