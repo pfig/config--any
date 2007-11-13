@@ -54,6 +54,19 @@ sub load {
     }
 }
 
+=head2 is_supported( )
+
+Returns true if either L<YAML::Syck> or L<YAML> is available.
+
+=cut
+
+sub is_supported {
+    eval { require YAML::Syck; };
+    return 1 unless $@;
+    eval { require YAML; };
+    return $@ ? 0 : 1;
+}
+
 =head1 AUTHOR
 
 Brian Cassidy E<lt>bricas@cpan.orgE<gt>

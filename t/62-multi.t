@@ -23,6 +23,11 @@ SKIP: {
     is( @results, 2, '2 documents' );
     is_deeply( \@results, \@expect, 'structures ok' );
 
-    my $return = Config::Any->load_files( { use_ext => 1, files => [ $file ] } );
-    is_deeply( $return, [ { $file => \@expect } ], 'config-any structures ok' );
+    my $return
+        = Config::Any->load_files( { use_ext => 1, files => [ $file ] } );
+    is_deeply(
+        $return,
+        [ { $file => \@expect } ],
+        'config-any structures ok'
+    );
 }

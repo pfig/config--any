@@ -68,6 +68,17 @@ sub _test_perl {
     return defined $is_perl_src;
 }
 
+=head2 is_supported( )
+
+Returns true if L<Config::General> is available.
+
+=cut
+
+sub is_supported {
+    eval { require Config::General; };
+    return $@ ? 0 : 1;
+}
+
 =head1 AUTHOR
 
 Brian Cassidy E<lt>bricas@cpan.orgE<gt>

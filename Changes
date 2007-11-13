@@ -6,7 +6,9 @@ Revision history for Config-Any
     - when use_ext is on, if a parser throws an error, we throw an error
     - fix case where use_ext is defined and false, but was behaving like
       use_ext => 1
-    - allow loaders to return multiple documents as an array.
+    - allow loaders to return multiple documents as an array
+    - each plugin now has an is_supported() which helps us figure out if
+      the right modules are available
 
 0.08 Thu Aug 23 2007
     - pass config options to each parser

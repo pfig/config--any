@@ -65,6 +65,17 @@ sub load {
     return $out;
 }
 
+=head2 is_supported( )
+
+Returns true if L<Config::Tiny> is available.
+
+=cut
+
+sub is_supported {
+    eval { require Config::Tiny; };
+    return $@ ? 0 : 1;
+}
+
 =head1 PACKAGE VARIABLES
 
 =over 4

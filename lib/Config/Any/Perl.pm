@@ -54,6 +54,16 @@ sub load {
     return $content;
 }
 
+=head2 is_supported( )
+
+Returns true.
+
+=cut
+
+sub is_supported {
+    return 1;
+}
+
 =head1 AUTHOR
 
 Brian Cassidy E<lt>bricas@cpan.orgE<gt>

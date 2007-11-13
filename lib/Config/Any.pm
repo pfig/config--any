@@ -133,19 +133,21 @@ sub _load {
     my ( $class, $args ) = @_;
     croak "_load requires a arrayref of file paths" unless $args->{ files };
 
-    if( !defined $args->{ use_ext } ) {
-        warn "use_ext argument was not explicitly set, as of 0.09, this is true by default";
+    if ( !defined $args->{ use_ext } ) {
+        warn
+            "use_ext argument was not explicitly set, as of 0.09, this is true by default";
         $args->{ use_ext } = 1;
     }
 
     # figure out what plugins we're using
-    my $force   = defined $args->{ force_plugins };
-    my @plugins = $force ? @{ $args->{ force_plugins } } : $class->plugins;
+    my $force = defined $args->{ force_plugins };
+    my @plugins = grep { $_->is_supported }
+        ( $force ? @{ $args->{ force_plugins } } : $class->plugins );
 
     # map extensions if we have to
-    my( %extension_lut, $extension_re );
+    my ( %extension_lut, $extension_re );
     my $use_ext_lut = !$force && $args->{ use_ext };
-    if( $use_ext_lut ) {
+    if ( $use_ext_lut ) {
         for my $plugin ( @plugins ) {
             $extension_lut{ $_ } = $plugin for $plugin->extensions;
         }
@@ -164,19 +166,21 @@ sub _load {
     my @results;
 
     for my $filename ( @{ $args->{ files } } ) {
+
         # don't even bother if it's not there
         next unless -f $filename;
 
         my @try_plugins = @plugins;
 
-        if( $use_ext_lut ) {
+        if ( $use_ext_lut ) {
             $filename =~ m{\.($extension_re)\z};
             next unless $1;
             @try_plugins = $extension_lut{ $1 };
         }
 
         for my $loader ( @try_plugins ) {
-            my @configs = eval { $loader->load( $filename, $loader_args{ $loader } ); };
+            my @configs
+                = eval { $loader->load( $filename, $loader_args{ $loader } ); };
 
             # fatal error if we used extension matching
             croak "Error parsing file: $filename" if $@ and $use_ext_lut;
@@ -187,7 +191,8 @@ sub _load {
                 $args->{ filter }->( $_ ) for @configs;
             }
 
-            push @results, { $filename => @configs == 1 ? $configs[ 0 ] : \@configs };
+            push @results,
+                { $filename => @configs == 1 ? $configs[ 0 ] : \@configs };
             last;
         }
     }

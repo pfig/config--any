@@ -57,6 +57,19 @@ sub load {
     }
 }
 
+=head2 is_supported( )
+
+Returns true if either L<JSON::Syck> or L<JSON> is available.
+
+=cut
+
+sub is_supported {
+    eval { require JSON::Syck; };
+    return 1 unless $@;
+    eval { require JSON; };
+    return $@ ? 0 : 1;
+}
+
 =head1 AUTHOR
 
 Brian Cassidy E<lt>bricas@cpan.orgE<gt>

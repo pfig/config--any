@@ -6,7 +6,7 @@ use_ok( 'Config::Any' );
     my @warnings;
     local $SIG{ __WARN__ } = sub { push @warnings, @_ };
 
-    Config::Any->load_files( );
+    Config::Any->load_files();
     like(
         shift @warnings,
         qr/^No files specified!/,
@@ -20,7 +20,7 @@ use_ok( 'Config::Any' );
         "load_files expects files"
     );
 
-    Config::Any->load_stems( );
+    Config::Any->load_stems();
     like(
         shift @warnings,
         qr/^No stems specified!/,
