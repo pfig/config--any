@@ -8,7 +8,6 @@ name 'Config-Any';
 all_from 'lib/Config/Any.pm';
 
 requires 'Module::Pluggable' => '3.01';
-requires 'version';
 
 test_requires 'Test::More';
 
