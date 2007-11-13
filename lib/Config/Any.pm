@@ -141,8 +141,7 @@ sub _load {
     }
 
     # figure out what plugins we're using
-    my @plugins = grep { $_->is_supported }
-        ( $force ? @{ $args->{ force_plugins } } : $class->plugins );
+    my @plugins = $force ? @{ $args->{ force_plugins } } : $class->plugins;
 
     # map extensions if we have to
     my ( %extension_lut, $extension_re );
@@ -179,6 +178,7 @@ sub _load {
         }
 
         for my $loader ( @try_plugins ) {
+            next unless $loader->is_supported;
             my @configs
                 = eval { $loader->load( $filename, $loader_args{ $loader } ); };
 
