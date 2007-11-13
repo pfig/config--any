@@ -3,12 +3,12 @@ Revision history for Config-Any
 0.09_01 Tue Nov 13 2007
     - code and pod cleanups
     - use_ext is now on by default
-    - when use_ext is on, if a parser throws an error, we throw an error
+    - when use_ext is on, if a loader throws an error, we throw an error
     - fix case where use_ext is defined and false, but was behaving like
       use_ext => 1
     - allow loaders to return multiple documents as an array
-    - each plugin now has an is_supported() which helps us figure out if
-      the right modules are available
+    - each plugin now has an is_supported() method which helps us figure out
+      if the right modules are available
 
 0.08 Thu Aug 23 2007
     - pass config options to each parser
