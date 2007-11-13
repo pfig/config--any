@@ -1,5 +1,8 @@
 Revision history for Config-Any
 
+0.09_02 Tue Nov 13 2007
+    - require version 0.70 of YAML::Syck for multi-document loading
+
 0.09_01 Tue Nov 13 2007
     - code and pod cleanups
     - use_ext is now on by default

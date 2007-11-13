@@ -41,7 +41,7 @@ sub load {
     my $class = shift;
     my $file  = shift;
 
-    eval { require YAML::Syck; };
+    eval { require YAML::Syck; YAML::Syck->VERSION( '0.70' ) };
     if ( $@ ) {
         require YAML;
         return YAML::LoadFile( $file );

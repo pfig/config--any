@@ -19,7 +19,7 @@ my @expect = (
 my @results = eval { Config::Any::YAML->load( $file ); };
 
 SKIP: {
-    skip "Can't load YAML files", 3 if $@;
+    skip "Can't load multi-stream YAML files", 3 if $@;
     is( @results, 2, '2 documents' );
     is_deeply( \@results, \@expect, 'structures ok' );
 
