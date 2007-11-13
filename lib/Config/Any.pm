@@ -133,14 +133,14 @@ sub _load {
     my ( $class, $args ) = @_;
     croak "_load requires a arrayref of file paths" unless $args->{ files };
 
-    if ( !defined $args->{ use_ext } ) {
+    my $force = defined $args->{ force_plugins };
+    if ( !$force and !defined $args->{ use_ext } ) {
         warn
             "use_ext argument was not explicitly set, as of 0.09, this is true by default";
         $args->{ use_ext } = 1;
     }
 
     # figure out what plugins we're using
-    my $force = defined $args->{ force_plugins };
     my @plugins = grep { $_->is_supported }
         ( $force ? @{ $args->{ force_plugins } } : $class->plugins );
 
