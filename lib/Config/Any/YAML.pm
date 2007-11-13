@@ -61,7 +61,7 @@ Returns true if either L<YAML::Syck> or L<YAML> is available.
 =cut
 
 sub is_supported {
-    eval { require YAML::Syck; };
+    eval { require YAML::Syck; YAML::Syck->VERSION( '0.70' ) };
     return 1 unless $@;
     eval { require YAML; };
     return $@ ? 0 : 1;
