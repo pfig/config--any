@@ -1,34 +1,38 @@
 Revision history for Config-Any
 
-0.09 Thu Nov 08 2007
-    code and pod cleanups
+0.09_01 Tue Nov 13 2007
+    - code and pod cleanups
+    - use_ext is now on by default
+    - when use_ext is on, if a parser throws an error, we throw an error
+    - fix case where use_ext is defined and false, but was behaving like
+      use_ext => 1
+    - allow loaders to return multiple documents as an array.
 
 0.08 Thu Aug 23 2007
-    pass config options to each parser
-    fix for loading the same perl config twice (RT #28812)
+    - pass config options to each parser
+    - fix for loading the same perl config twice (RT #28812)
 
 0.07 Mon Feb 26 2007
-    promote 0.06_01 to non-dev.
+    - promote 0.06_01 to non-dev.
 
 0.06_01 Sun Feb 25 19:23:00 2007
-    fixed bug [rt.cpan.org #25143] make tests fails
-        - t/61_features.t had 1 more test added than was set to skip if the INI parser
-          was not installed. Fixed by s/9/10/ on the skip() line.
+    - fixed bug [rt.cpan.org #25143] make tests fails
+      + t/61_features.t had 1 more test added than was set to skip if the INI
+        parser was not installed. Fixed by s/9/10/ on the skip() line.
 
 0.06 Thu Feb 22 21:05:00 2007
-    removed reference to Test::Exception, bumped version number
+    - removed reference to Test::Exception, bumped version number
 
 0.05  Wed Feb 21 22:00:00 2007
-    added support for:
-        - 'force_plugins => [ qw(Config::Any::Foo Config::Any::Blah) ]' parameter
-	  to load_(files|stems)
-        - $Config::Any::INI::MAP_SECTION_SPACE_TO_NESTED_KEY - boolean, defaulting
-          to on, controlling whether to map spaces in INI section headings 
-          to nested hashrefs 
-        both as requested by Evan Kaufman	
+    - added support for (requested by Evan Kaufman):
+      + 'force_plugins => [ qw(Config::Any::Foo Config::Any::Blah) ]' parameter
+	    to load_(files|stems)
+      + $Config::Any::INI::MAP_SECTION_SPACE_TO_NESTED_KEY - boolean, defaulting
+        to on, controlling whether to map spaces in INI section headings 
+        to nested hashrefs
 
 0.04  Mon Aug  7 15:15:15 2006
-    Initial CPAN-worthy release with proper test suite
+    - Initial CPAN-worthy release with proper test suite
 
 0.01 - 0.03 dev releases
 

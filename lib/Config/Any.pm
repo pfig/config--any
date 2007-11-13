@@ -6,7 +6,7 @@ use warnings;
 use Carp;
 use Module::Pluggable::Object ();
 
-our $VERSION = '0.09';
+our $VERSION = '0.09_01';
 
 =head1 NAME
 
@@ -129,64 +129,70 @@ sub load_stems {
     return $class->_load( $args );
 }
 
-# this is where we do the real work
-# it's a private class-method because users should use the interface described
-# in the POD.
 sub _load {
     my ( $class, $args ) = @_;
-    my ( $files_ref, $filter_cb, $use_ext, $force_plugins_ref )
-        = @{ $args }{ qw(files filter use_ext force_plugins) };
-    croak "_load requires a arrayref of file paths" unless defined $files_ref;
+    croak "_load requires a arrayref of file paths" unless $args->{ files };
 
-    my %files         = map { $_ => 1 } @$files_ref;
-    my %force_plugins = map { $_ => 1 } @$force_plugins_ref;
-    my $enforcing = keys %force_plugins ? 1 : 0;
+    if( !defined $args->{ use_ext } ) {
+        warn "use_ext argument was not explicitly set, as of 0.09, this is true by default";
+        $args->{ use_ext } = 1;
+    }
 
-    my $final_configs     = [];
-    my $originally_loaded = {};
+    # figure out what plugins we're using
+    my $force   = defined $args->{ force_plugins };
+    my @plugins = $force ? @{ $args->{ force_plugins } } : $class->plugins;
 
-    # perform a separate file loop for each loader
-    for my $loader ( $class->plugins ) {
-        next if $enforcing && not defined $force_plugins{ $loader };
-        last unless keys %files;
-        my %ext = map { $_ => 1 } $loader->extensions;
+    # map extensions if we have to
+    my( %extension_lut, $extension_re );
+    my $use_ext_lut = !$force && $args->{ use_ext };
+    if( $use_ext_lut ) {
+        for my $plugin ( @plugins ) {
+            $extension_lut{ $_ } = $plugin for $plugin->extensions;
+        }
 
-        my ( $loader_class ) = $loader =~ /::([^:]+)$/;
-        my $driver_args = $args->{ driver_args }{ $loader_class } || {};
+        $extension_re = join( '|', keys %extension_lut );
+    }
 
-    FILE:
-        for my $filename ( keys %files ) {
-            next unless -f $filename;
+    # map args to plugins
+    my $base_class = __PACKAGE__;
+    my %loader_args;
+    for my $plugin ( @plugins ) {
+        $plugin =~ m{^$base_class\::(.+)};
+        $loader_args{ $plugin } = $args->{ driver_args }->{ $1 } || {};
+    }
 
-       # use file extension to decide whether this loader should try this file
-       # use_ext => 1 hits this block
-            if ( defined $use_ext && !$enforcing ) {
-                my $matched_ext = 0;
-            EXT:
-                for my $e ( keys %ext ) {
-                    next EXT unless $filename =~ m{ \. $e \z }xms;
-                    next FILE unless exists $ext{ $e };
-                    $matched_ext = 1;
-                }
+    my @results;
 
-                next FILE unless $matched_ext;
+    for my $filename ( @{ $args->{ files } } ) {
+        # don't even bother if it's not there
+        next unless -f $filename;
+
+        my @try_plugins = @plugins;
+
+        if( $use_ext_lut ) {
+            $filename =~ m{\.($extension_re)\z};
+            next unless $1;
+            @try_plugins = $extension_lut{ $1 };
+        }
+
+        for my $loader ( @try_plugins ) {
+            my @configs = eval { $loader->load( $filename, $loader_args{ $loader } ); };
+
+            # fatal error if we used extension matching
+            croak "Error parsing file: $filename" if $@ and $use_ext_lut;
+            next if $@ or !@configs;
+
+            # post-process config with a filter callback
+            if ( $args->{ filter } ) {
+                $args->{ filter }->( $_ ) for @configs;
             }
 
-            my $config;
-            eval { $config = $loader->load( $filename, $driver_args ); };
-
-            next if $@;         # if it croaked or warned, we can't use it
-            next if !$config;
-            delete $files{ $filename };
-
-            # post-process config with a filter callback, if we got one
-            $filter_cb->( $config ) if defined $filter_cb;
-
-            push @$final_configs, { $filename => $config };
+            push @results, { $filename => @configs == 1 ? $configs[ 0 ] : \@configs };
+            last;
         }
     }
 
-    return $final_configs;
+    return \@results;
 }
 
 =head2 finder( )

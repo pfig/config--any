@@ -70,23 +70,15 @@ sub _test_perl {
 
 =head1 AUTHOR
 
-=over 4 
-
-=item * Brian Cassidy E<lt>bricas@cpan.orgE<gt>
-
-=back
+Brian Cassidy E<lt>bricas@cpan.orgE<gt>
 
 =head1 CONTRIBUTORS
 
-=over 4
-
-=item * Joel Bernstein C<< <rataxis@cpan.org> >>
-
-=back
+Joel Bernstein C<< <rataxis@cpan.org> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Brian Cassidy
+Copyright 2007 by Brian Cassidy
 
 Portions Copyright 2006 Portugal Telecom
 

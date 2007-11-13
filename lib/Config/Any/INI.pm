@@ -84,19 +84,15 @@ Set it to 0 to preserve literal spaces in section headings:
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-=over 4 
+Brian Cassidy E<lt>bricas@cpan.orgE<gt>
 
-=item * Brian Cassidy E<lt>bricas@cpan.orgE<gt>
-
-=item * Joel Bernstein E<lt>rataxis@cpan.orgE<gt>
-
-=back
+Joel Bernstein E<lt>rataxis@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2006 by Brian Cassidy, portions copyright 2006, 2007 by Joel Bernstein
+Copyright 2007 by Brian Cassidy, portions copyright 2006, 2007 by Joel Bernstein
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
