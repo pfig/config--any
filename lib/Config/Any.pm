@@ -25,7 +25,7 @@ This document describes Config::Any version 0.09_02
     my $cfg = Config::Any->load_files({files => \@filepaths, ... });
 
     for (@$cfg) {
-        my ($filename, $config) = each %$_;
+        my ($filename, $config) = %$_;
         $class->config($config);
         warn "loaded config from file: $filename";
     }
