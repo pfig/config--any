@@ -14,7 +14,7 @@ Config::Any - Load configuration from different file formats, transparently
 
 =head1 VERSION
 
-This document describes Config::Any version 0.09_02
+This document describes Config::Any version 0.10
 
 =head1 SYNOPSIS
 
