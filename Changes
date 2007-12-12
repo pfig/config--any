@@ -1,5 +1,8 @@
 Revision history for Config-Any
 
+0.10 Tue 11 Dec 2007
+    - promote dev release to stable
+
 0.09_02 Tue Nov 13 2007
     - require version 0.70 of YAML::Syck for multi-document loading
 
