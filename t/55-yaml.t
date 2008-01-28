@@ -1,11 +1,18 @@
-use Test::More tests => 2;
+use strict;
+use warnings;
 
+use Test::More;
 use Config::Any::YAML;
 
-my $config = eval { Config::Any::YAML->load( 't/conf/conf.yml' ) };
+if ( !Config::Any::YAML->is_supported ) {
+    plan skip_all => 'YAML format not supported';
+}
+else {
+    plan tests => 2;
+}
 
-SKIP: {
-    skip "Couldn't Load YAML plugin", 2 if $@;
+{
+    my $config = Config::Any::YAML->load( 't/conf/conf.yml' );
     ok( $config );
     is( $config->{ name }, 'TestApp' );
 }

@@ -1,19 +1,25 @@
-use Test::More tests => 4;
+use strict;
+use warnings;
 
+use Test::More;
 use Config::Any::General;
 
-my $config = eval { Config::Any::General->load( 't/conf/conf.conf' ) };
+if ( !Config::Any::General->is_supported ) {
+    plan skip_all => 'Config::General format not supported';
+}
+else {
+    plan tests => 4;
+}
 
-SKIP: {
-    skip "Couldn't Load Config::General plugin", 4 if $@;
+{
+    my $config = Config::Any::General->load( 't/conf/conf.conf' );
     ok( $config );
     is( $config->{ name }, 'TestApp' );
     ok( exists $config->{ Component } );
+}
 
-    $config = eval {
-        Config::Any::General->load( 't/conf/conf.conf',
-            { -LowerCaseNames => 1 } );
-    };
-
+{
+    my $config = Config::Any::General->load( 't/conf/conf.conf',
+        { -LowerCaseNames => 1 } );
     ok( exists $config->{ component } );
 }

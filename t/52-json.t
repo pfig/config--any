@@ -1,11 +1,18 @@
-use Test::More tests => 2;
+use strict;
+use warnings;
 
+use Test::More;
 use Config::Any::JSON;
 
-my $config = eval { Config::Any::JSON->load( 't/conf/conf.json' ) };
+if ( !Config::Any::JSON->is_supported ) {
+    plan skip_all => 'JSON format not supported';
+}
+else {
+    plan tests => 2;
+}
 
-SKIP: {
-    skip "Couldn't Load JSON plugin", 2 if $@;
+{
+    my $config = Config::Any::JSON->load( 't/conf/conf.json' );
     ok( $config );
     is( $config->{ name }, 'TestApp' );
 }

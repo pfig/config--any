@@ -1,30 +1,48 @@
-use Test::More tests => 9;
+use strict;
+use warnings;
 
+use Test::More;
 use Config::Any::INI;
 
-my $config       = eval { Config::Any::INI->load( 't/conf/conf.ini' ) };
-my $simpleconfig = eval { Config::Any::INI->load( 't/conf/conf2.ini' ) };
+if ( !Config::Any::INI->is_supported ) {
+    plan skip_all => 'INI format not supported';
+}
+else {
+    plan tests => 11;
+}
 
-SKIP: {
-    skip "Couldn't Load INI plugin", 6 if $@;
-    ok( $config, "loaded INI config #1" );
+{
+    my $config = Config::Any::INI->load( 't/conf/conf.ini' );
+    ok( $config, 'config loaded' );
     is( $config->{ name }, 'TestApp', "toplevel key lookup succeeded" );
-    is( $config->{ Component }->{ Controller::Foo }->{ foo },
-        'bar', "nested hashref hack lookup succeeded" );
-
-    ok( $simpleconfig, "loaded INI config #1" );
-    is( $simpleconfig->{ name }, 'TestApp', "toplevel key lookup succeeded" );
-    is( $simpleconfig->{ Controller::Foo }->{ foo },
+    is( $config->{ Component }->{ 'Controller::Foo' }->{ foo },
         'bar', "nested hashref hack lookup succeeded" );
 }
 
-$Config::Any::INI::MAP_SECTION_SPACE_TO_NESTED_KEY = 0;
-my $unspaced_config = eval { Config::Any::INI->load( 't/conf/conf.ini' ); };
-SKIP: {
-    skip "Couldn't load INI plugin", 3 if $@;
-    ok( $unspaced_config, "loaded INI config #1 in no-map-space mode" );
-    is( $unspaced_config->{ name },
-        'TestApp', "toplevel key lookup succeeded" );
-    is( $unspaced_config->{ 'Component Controller::Foo' }->{ foo },
+{
+    my $config = Config::Any::INI->load( 't/conf/conf2.ini' );
+    ok( $config, 'config loaded' );
+    is( $config->{ name }, 'TestApp', "toplevel key lookup succeeded" );
+    is( $config->{ 'Controller::Foo' }->{ foo },
+        'bar', "nested hashref hack lookup succeeded" );
+}
+
+{
+    local $Config::Any::INI::MAP_SECTION_SPACE_TO_NESTED_KEY = 0;
+    my $config = Config::Any::INI->load( 't/conf/conf.ini' );
+    ok( $config, 'config loaded (no-map-space mode)' );
+    is( $config->{ name }, 'TestApp', "toplevel key lookup succeeded" );
+    is( $config->{ 'Component Controller::Foo' }->{ foo },
         'bar', "unnested key lookup succeeded" );
+}
+
+{
+    my $config = Config::Any::INI->load( 't/conf/subsections.ini' );
+
+    my %expected
+        = ( section1 =>
+            { a => 1, subsection1 => { b => 2 }, subsection2 => { c => 3 } }
+        );
+    ok( $config, 'config loaded' );
+    is_deeply( $config, \%expected, 'subsections parsed properly' );
 }

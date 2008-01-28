@@ -1,5 +1,10 @@
 Revision history for Config-Any
 
+0.11 Mon 28 Jan 2008
+    - fix subsection parsing for existing keys in INI files (RT #32726)
+    - use from_json() if JSON version 2.x is available
+    - refactor the test suite slightly
+
 0.10 Tue 11 Dec 2007
     - promote dev release to stable
 

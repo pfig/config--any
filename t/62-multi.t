@@ -1,7 +1,7 @@
-use Test::More tests => 3;
-
 use strict;
 use warnings;
+
+use Test::More tests => 3;
 
 use Config::Any;
 use Config::Any::YAML;

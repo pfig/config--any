@@ -1,11 +1,18 @@
-use Test::More tests => 2;
+use strict;
+use warnings;
 
+use Test::More;
 use Config::Any::XML;
 
-my $config = eval { Config::Any::XML->load( 't/conf/conf.xml' ) };
+if ( !Config::Any::XML->is_supported ) {
+    plan skip_all => 'XML format not supported';
+}
+else {
+    plan tests => 2;
+}
 
-SKIP: {
-    skip "Couldn't Load XML plugin", 2 if $@;
+{
+    my $config = Config::Any::XML->load( 't/conf/conf.xml' );
     ok( $config );
     is( $config->{ name }, 'TestApp' );
 }
