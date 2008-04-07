@@ -5,6 +5,7 @@ if ( -e 'MANIFEST.SKIP' ) {
 }
 
 perl_version '5.006';
+name 'Config-Any';
 
 all_from 'lib/Config/Any.pm';
 
