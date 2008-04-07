@@ -1,6 +1,6 @@
 Revision history for Config-Any
 
-0.12 XXX 2008
+0.12 Mon 07 Apr 2008
     - ensure Perl loader dies on a failed require() (RT #32995)
 
 0.11 Mon 28 Jan 2008
