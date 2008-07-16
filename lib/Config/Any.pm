@@ -193,7 +193,12 @@ sub _load {
         }
     }
 
-    return \@results;
+    if ( defined $args->{ flatten_to_hash } ) {
+        my %flattened = map { %$_ } @results;
+        return \%flattened;
+    } else {
+        return \@results;
+    }
 }
 
 =head2 finder( )
