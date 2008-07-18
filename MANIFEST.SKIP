@@ -3,6 +3,8 @@
 \bCVS\b
 ,v$
 \B\.svn\b
+\B\.git\b
+\b\.gitignore$
 
 # Avoid Makemaker generated and utility files.
 \bMakefile$
@@ -21,9 +23,11 @@
 \.tmp$
 \.old$
 \.bak$
+\.swp$
 \#$
 \b\.#
 \.DS_Store$
+\._.*
 
 # No tarballs!
 \.gz$
